@@ -25,6 +25,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
 import java.io.ByteArrayInputStream;
@@ -34,13 +35,14 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * A class which contains utilities to make OAuth2 specific calls.
  */
 public class OAuthUtil {
   public static String getAccessTokenByRefreshToken(CloseableHttpClient httpclient, String tokenUrl, String clientId,
-                                                    String clientSecret, String refreshToken)
+                                                    String clientSecret, String refreshToken, String grantType)
     throws IOException {
 
     URI uri;
@@ -49,7 +51,7 @@ public class OAuthUtil {
         .setParameter("client_id", clientId)
         .setParameter("client_secret", clientSecret)
         .setParameter("refresh_token", refreshToken)
-        .setParameter("grant_type", "refresh_token")
+        .setParameter("grant_type", grantType)
         .build();
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException("Failed to build token URI for OAuth2", e);
@@ -91,6 +93,30 @@ public class OAuthUtil {
       throw new IllegalArgumentException("Failed to generate Access Token with given Service Account information", e);
     }
     return accessToken;
+  }
+
+  public static String getAccessTokenByClientCredentials(CloseableHttpClient httpclient, String tokenUrl,
+                                                         String clientId, String clientSecret, String grantType)
+          throws IOException {
+    URI uri;
+    try {
+      uri = new URIBuilder(tokenUrl).setParameter("grant_type", grantType).build();
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("Failed to build token URI for OAuth2", e);
+    }
+
+    HttpPost httppost = new HttpPost(uri);
+    httppost.addHeader(new BasicHeader("Authorization", "Basic " + getBase64EncodeValue(clientId, clientSecret)));
+    httppost.addHeader(new BasicHeader("Content-Type", "application/json"));
+    CloseableHttpResponse response = httpclient.execute(httppost);
+    String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+
+    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get("access_token");
+    return jsonElement.getAsString();
+  }
+
+  private static String getBase64EncodeValue(String clientId, String clientSecret) {
+    return Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
   }
 }
 

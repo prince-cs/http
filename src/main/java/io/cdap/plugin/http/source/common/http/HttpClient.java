@@ -136,9 +136,15 @@ public class HttpClient implements Closeable {
 
     switch (authType) {
       case OAUTH2:
-        String accessToken = OAuthUtil.getAccessTokenByRefreshToken(HttpClients.createDefault(), config.getTokenUrl(),
-                                                                    config.getClientId(), config.getClientSecret(),
-                                                                    config.getRefreshToken());
+        String accessToken;
+        if (config.getGrantType() == "refresh_token") {
+          accessToken = OAuthUtil.getAccessTokenByRefreshToken(HttpClients.createDefault(), config.getTokenUrl(),
+                  config.getClientId(), config.getClientSecret(),
+                  config.getRefreshToken(), config.getGrantType());
+        } else {
+          accessToken = OAuthUtil.getAccessTokenByClientCredentials(HttpClients.createDefault(), config.getTokenUrl(),
+                  config.getClientId(), config.getClientSecret(), config.getGrantType());
+        }
         clientHeaders.add(new BasicHeader("Authorization", "Bearer " + accessToken));
         break;
       case SERVICE_ACCOUNT:

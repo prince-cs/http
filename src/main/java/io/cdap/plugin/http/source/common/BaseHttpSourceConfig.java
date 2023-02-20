@@ -118,6 +118,7 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
 
   public static final String PAGINATION_INDEX_PLACEHOLDER_REGEX = "\\{pagination.index\\}";
   public static final String PAGINATION_INDEX_PLACEHOLDER = "{pagination.index}";
+  public static final String PROPERTY_GRANT_TYPE = "grantType";
 
   @Name(PROPERTY_URL)
   @Description("Url to fetch to the first page. The url must start with a protocol (e.g. http://).")
@@ -442,6 +443,11 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
   @Description("Output schema. Is required to be set.")
   protected String schema;
 
+  @Nullable
+  @Name(PROPERTY_GRANT_TYPE)
+  @Description("Value of grant type to determine the OAuth mechanism")
+  protected String grantType;
+
   protected BaseHttpSourceConfig(String referenceName) {
     super(referenceName);
   }
@@ -719,6 +725,10 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
                                                  schema, e, PROPERTY_SCHEMA);
     }
   }
+  @Nullable
+  public String getGrantType() {
+    return grantType;
+  }
 
   @Nullable
   public Map<String, String> getHeadersMap() {
@@ -798,7 +808,6 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
           String.format("URL value is not valid: '%s'", getUrl()), e, PROPERTY_URL);
       }
     }
-
     // Validate Linear Retry Interval
     if (!containsMacro(PROPERTY_RETRY_POLICY) && getRetryPolicy() == RetryPolicy.LINEAR) {
       assertIsSet(getLinearRetryInterval(), PROPERTY_LINEAR_RETRY_INTERVAL, "retry policy is linear");
@@ -883,20 +892,22 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
     // Validate OAuth2 properties
     if (!containsMacro(PROPERTY_OAUTH2_ENABLED) && this.getOauth2Enabled()) {
       String reasonOauth2 = "OAuth2 is enabled";
-      assertIsSet(getAuthUrl(), PROPERTY_AUTH_URL, reasonOauth2);
       assertIsSet(getTokenUrl(), PROPERTY_TOKEN_URL, reasonOauth2);
       assertIsSet(getClientId(), PROPERTY_CLIENT_ID, reasonOauth2);
       assertIsSet(getClientSecret(), PROPERTY_CLIENT_SECRET, reasonOauth2);
-      assertIsSet(getRefreshToken(), PROPERTY_REFRESH_TOKEN, reasonOauth2);
+      assertIsSet(getGrantType(), PROPERTY_GRANT_TYPE, reasonOauth2);
+
+      // refresh token validate
+      if (refreshTokenGrantType()) {
+        assertIsSet(getAuthUrl(), PROPERTY_AUTH_URL, reasonOauth2);
+        assertIsSet(getRefreshToken(), PROPERTY_REFRESH_TOKEN, reasonOauth2);
+      }
     }
     // Validate Authentication properties
     AuthType authType = getAuthType();
     switch (authType) {
       case OAUTH2:
         String reasonOauth2 = "OAuth2 is enabled";
-        if (!containsMacro(PROPERTY_AUTH_URL)) {
-          assertIsSet(getAuthUrl(), PROPERTY_AUTH_URL, reasonOauth2);
-        }
         if (!containsMacro(PROPERTY_TOKEN_URL)) {
           assertIsSet(getTokenUrl(), PROPERTY_TOKEN_URL, reasonOauth2);
         }
@@ -906,8 +917,16 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
         if (!containsMacro((PROPERTY_CLIENT_SECRET))) {
           assertIsSet(getClientSecret(), PROPERTY_CLIENT_SECRET, reasonOauth2);
         }
-        if (!containsMacro(PROPERTY_REFRESH_TOKEN)) {
-          assertIsSet(getRefreshToken(), PROPERTY_REFRESH_TOKEN, reasonOauth2);
+        if (!containsMacro(PROPERTY_GRANT_TYPE)) {
+          assertIsSet(getGrantType(), PROPERTY_GRANT_TYPE, reasonOauth2);
+          if (refreshTokenGrantType()) {
+            if (!containsMacro(PROPERTY_REFRESH_TOKEN)) {
+              assertIsSet(getRefreshToken(), PROPERTY_REFRESH_TOKEN, reasonOauth2);
+            }
+            if (!containsMacro(PROPERTY_AUTH_URL)) {
+              assertIsSet(getAuthUrl(), PROPERTY_AUTH_URL, reasonOauth2);
+            }
+          }
         }
         break;
       case SERVICE_ACCOUNT:
@@ -939,6 +958,13 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
       assertIsNotSet(getTrustStoreFile(), PROPERTY_TRUSTSTORE_FILE,
                      String.format("trustore settings are ignored due to disabled %s", PROPERTY_VERIFY_HTTPS));
     }
+  }
+
+  private boolean refreshTokenGrantType() {
+    if (getGrantType() == "refresh_token") {
+      return true;
+    }
+    return false;
   }
 
   private boolean validateServiceAccount(FailureCollector collector) {
