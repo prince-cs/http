@@ -696,19 +696,16 @@
       },
       "show": [
         {
-          "widget-type": "textbox",
-          "label": "Token URL",
-          "name": "tokenUrl"
+          "name": "tokenUrl",
+          "type": "property"
         },
         {
-          "widget-type": "textbox",
-          "label": "Client ID",
-          "name": "clientId"
+          "name": "clientId",
+          "type": "property"
         },
         {
-          "widget-type": "password",
-          "label": "Client Secret",
-          "name": "clientSecret"
+          "name": "clientSecret",
+          "type": "property"
         },
         {
           "name": "scopes",
@@ -799,9 +796,8 @@
       },
       "show": [
         {
-          "widget-type": "textbox",
-          "label": "Auth URL",
-          "name": "authUrl"
+          "name": "authUrl",
+          "type": "property"
         },
         {
           "name": "refreshToken",

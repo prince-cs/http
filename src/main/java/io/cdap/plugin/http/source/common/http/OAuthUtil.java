@@ -48,10 +48,10 @@ public class OAuthUtil {
     URI uri;
     try {
       uri = new URIBuilder(tokenUrl)
-        .setParameter("client_id", clientId)
-        .setParameter("client_secret", clientSecret)
-        .setParameter("refresh_token", refreshToken)
-        .setParameter("grant_type", grantType)
+        .setParameter(BaseHttpSourceConfig.PARAMETER_CLIENT_ID, clientId)
+        .setParameter(BaseHttpSourceConfig.PARAMETER_CLIENT_SECRET, clientSecret)
+        .setParameter(BaseHttpSourceConfig.PARAMETER_REFRESH_TOKEN, refreshToken)
+        .setParameter(BaseHttpSourceConfig.PARAMETER_GRANT_TYPE, grantType)
         .build();
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException("Failed to build token URI for OAuth2", e);
@@ -61,7 +61,7 @@ public class OAuthUtil {
     CloseableHttpResponse response = httpclient.execute(httppost);
     String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
 
-    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get("access_token");
+    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get(BaseHttpSourceConfig.PARAMETER_ACCESS_TOKEN);
     return jsonElement.getAsString();
   }
 
@@ -100,7 +100,7 @@ public class OAuthUtil {
           throws IOException {
     URI uri;
     try {
-      uri = new URIBuilder(tokenUrl).setParameter("grant_type", grantType).build();
+      uri = new URIBuilder(tokenUrl).setParameter(BaseHttpSourceConfig.PARAMETER_GRANT_TYPE, grantType).build();
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException("Failed to build token URI for OAuth2", e);
     }
@@ -111,7 +111,7 @@ public class OAuthUtil {
     CloseableHttpResponse response = httpclient.execute(httppost);
     String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
 
-    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get("access_token");
+    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get(BaseHttpSourceConfig.PARAMETER_ACCESS_TOKEN);
     return jsonElement.getAsString();
   }
 
