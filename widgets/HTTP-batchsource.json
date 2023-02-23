@@ -133,6 +133,18 @@
           }
         },
         {
+          "widget-type": "select",
+          "label": "Grant Type",
+          "name": "grantType",
+          "widget-attributes" : {
+            "values": [
+              "refresh_token",
+              "client_credentials"
+            ],
+            "default" : "refresh_token"
+          }
+        },
+        {
           "widget-type": "textbox",
           "label": "Auth URL",
           "name": "authUrl"
@@ -684,10 +696,6 @@
       },
       "show": [
         {
-          "name": "authUrl",
-          "type": "property"
-        },
-        {
           "name": "tokenUrl",
           "type": "property"
         },
@@ -704,7 +712,7 @@
           "type": "property"
         },
         {
-          "name": "refreshToken",
+          "name": "grantType",
           "type": "property"
         }
       ]
@@ -777,6 +785,22 @@
       "show": [
         {
           "name": "csvSkipFirstRow",
+          "type": "property"
+        }
+      ]
+    },
+    {
+      "name": "Grant Type Refresh Token",
+      "condition": {
+        "expression": "grantType == 'refresh_token' && authType == 'oAuth2'"
+      },
+      "show": [
+        {
+          "name": "authUrl",
+          "type": "property"
+        },
+        {
+          "name": "refreshToken",
           "type": "property"
         }
       ]

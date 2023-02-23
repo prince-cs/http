@@ -205,6 +205,7 @@ can be omitted as long as the field is present in schema.
 
 ### Authentication
 * **OAuth2**
+    * **Grant Type:** Value of grant type to determine the OAuth mechanism.
     * **Auth URL:** Endpoint for the authorization server used to retrieve the authorization code.
     * **Token URL:** Endpoint for the resource server, which exchanges the authorization code for an access token.
     * **Client ID:** Client identifier obtained during the Application registration process.

@@ -25,6 +25,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
 import java.io.ByteArrayInputStream;
@@ -34,22 +35,23 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * A class which contains utilities to make OAuth2 specific calls.
  */
 public class OAuthUtil {
   public static String getAccessTokenByRefreshToken(CloseableHttpClient httpclient, String tokenUrl, String clientId,
-                                                    String clientSecret, String refreshToken)
+                                                    String clientSecret, String refreshToken, String grantType)
     throws IOException {
 
     URI uri;
     try {
       uri = new URIBuilder(tokenUrl)
-        .setParameter("client_id", clientId)
-        .setParameter("client_secret", clientSecret)
-        .setParameter("refresh_token", refreshToken)
-        .setParameter("grant_type", "refresh_token")
+        .setParameter(BaseHttpSourceConfig.PARAMETER_CLIENT_ID, clientId)
+        .setParameter(BaseHttpSourceConfig.PARAMETER_CLIENT_SECRET, clientSecret)
+        .setParameter(BaseHttpSourceConfig.PARAMETER_REFRESH_TOKEN, refreshToken)
+        .setParameter(BaseHttpSourceConfig.PARAMETER_GRANT_TYPE, grantType)
         .build();
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException("Failed to build token URI for OAuth2", e);
@@ -59,7 +61,7 @@ public class OAuthUtil {
     CloseableHttpResponse response = httpclient.execute(httppost);
     String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
 
-    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get("access_token");
+    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get(BaseHttpSourceConfig.PARAMETER_ACCESS_TOKEN);
     if (jsonElement == null) {
          throw new IllegalArgumentException("Access token not found");
     }
@@ -94,6 +96,30 @@ public class OAuthUtil {
       throw new IllegalArgumentException("Failed to generate Access Token with given Service Account information", e);
     }
     return accessToken;
+  }
+
+  public static String getAccessTokenByClientCredentials(CloseableHttpClient httpclient, String tokenUrl,
+                                                         String clientId, String clientSecret, String grantType)
+          throws IOException {
+    URI uri;
+    try {
+      uri = new URIBuilder(tokenUrl).setParameter(BaseHttpSourceConfig.PARAMETER_GRANT_TYPE, grantType).build();
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("Failed to build token URI for OAuth2", e);
+    }
+
+    HttpPost httppost = new HttpPost(uri);
+    httppost.addHeader(new BasicHeader("Authorization", "Basic " + getBase64EncodeValue(clientId, clientSecret)));
+    httppost.addHeader(new BasicHeader("Content-Type", "application/json"));
+    CloseableHttpResponse response = httpclient.execute(httppost);
+    String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+
+    JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get(BaseHttpSourceConfig.PARAMETER_ACCESS_TOKEN);
+    return jsonElement.getAsString();
+  }
+
+  private static String getBase64EncodeValue(String clientId, String clientSecret) {
+    return Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
   }
 }
 
