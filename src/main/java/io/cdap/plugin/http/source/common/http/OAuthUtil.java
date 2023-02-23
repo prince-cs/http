@@ -62,6 +62,9 @@ public class OAuthUtil {
     String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
 
     JsonElement jsonElement = JSONUtil.toJsonObject(responseString).get(BaseHttpSourceConfig.PARAMETER_ACCESS_TOKEN);
+    if (jsonElement == null) {
+         throw new IllegalArgumentException("Access token not found");
+    }
     return jsonElement.getAsString();
   }
 
