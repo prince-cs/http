@@ -28,7 +28,10 @@ import io.cdap.plugin.common.ReferencePluginConfig;
 import io.cdap.plugin.http.source.common.error.ErrorHandling;
 import io.cdap.plugin.http.source.common.error.HttpErrorHandlerEntity;
 import io.cdap.plugin.http.source.common.error.RetryableErrorHandling;
-import io.cdap.plugin.http.source.common.http.*;
+import io.cdap.plugin.http.source.common.http.AuthType;
+import io.cdap.plugin.http.source.common.http.GrantType;
+import io.cdap.plugin.http.source.common.http.KeyStoreType;
+import io.cdap.plugin.http.source.common.http.OAuthUtil;
 import io.cdap.plugin.http.source.common.pagination.PaginationIteratorFactory;
 import io.cdap.plugin.http.source.common.pagination.PaginationType;
 import io.cdap.plugin.http.source.common.pagination.page.PageFormat;
@@ -117,7 +120,6 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
   public static final String PAGINATION_INDEX_PLACEHOLDER = "{pagination.index}";
   public static final String PROPERTY_GRANT_TYPE = "grantType";
   public static final String PROPERTY_GRANT_TYPE_LABEL = "Grant type";
-
   public static final String PARAMETER_CLIENT_ID = "client_id";
   public static final String PARAMETER_CLIENT_SECRET = "client_secret";
   public static final String PARAMETER_REFRESH_TOKEN = "refresh_token";
