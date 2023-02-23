@@ -902,7 +902,7 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
       assertIsSet(getGrantType(), PROPERTY_GRANT_TYPE, reasonOauth2);
 
       // refresh token validate
-      if (refreshTokenGrantType()) {
+      if (getGrantType() == GrantType.REFRESH_TOKEN.getValue()) {
         assertIsSet(getAuthUrl(), PROPERTY_AUTH_URL, reasonOauth2);
         assertIsSet(getRefreshToken(), PROPERTY_REFRESH_TOKEN, reasonOauth2);
       }
@@ -923,7 +923,7 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
         }
         if (!containsMacro(PROPERTY_GRANT_TYPE)) {
           assertIsSet(getGrantType(), PROPERTY_GRANT_TYPE, reasonOauth2);
-          if (refreshTokenGrantType()) {
+          if (getGrantType() == GrantType.REFRESH_TOKEN.getValue()) {
             if (!containsMacro(PROPERTY_REFRESH_TOKEN)) {
               assertIsSet(getRefreshToken(), PROPERTY_REFRESH_TOKEN, reasonOauth2);
             }
