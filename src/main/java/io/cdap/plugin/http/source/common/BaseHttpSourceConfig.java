@@ -966,15 +966,6 @@ public abstract class BaseHttpSourceConfig extends ReferencePluginConfig {
     }
   }
 
-  private boolean refreshTokenGrantType() {
-    if (getGrantType() == GrantType.REFRESH_TOKEN.getValue()) {
-      return true;
-    } else if (getGrantType() == GrantType.CLIENT_CREDENTIALS.getValue()) {
-      return false;
-    }
-    return false;
-  }
-
   private boolean validateServiceAccount(FailureCollector collector) {
     if (containsMacro(PROPERTY_NAME_SERVICE_ACCOUNT_FILE_PATH) || containsMacro(PROPERTY_NAME_SERVICE_ACCOUNT_JSON)) {
       return false;
